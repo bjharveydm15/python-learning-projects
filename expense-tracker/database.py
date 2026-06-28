@@ -67,15 +67,18 @@ def query_category(name):
 
         return result[0] if result else None
 
-def query_records():
+def query_records(category):
     with sqlite3.connect('expenses_tracker.db') as connection:
         connection.execute("PRAGMA foreign_keys = ON")
         cursor = connection.cursor()
+        category_id = query_id(connection, category)
 
         cursor.execute(
             '''
-            SELECT * FROM Expenses
-            '''
+            SELECT amount FROM Expenses
+            WHERE category_id = ?
+            ''',
+            (category_id,)
         )
         return cursor.fetchall()
 
@@ -93,7 +96,7 @@ def query_id(connection, name):
 
     return data[0] if data else None
 
-def update_category(new_name, old_name):
+def update_category(old_name, new_name):
     with sqlite3.connect('expenses_tracker.db') as connection:
         connection.execute("PRAGMA foreign_keys = ON")
         category_id = query_id(connection, old_name)
@@ -134,7 +137,7 @@ def delete_category(name):
             (category_id,)
         )
 
-def delete_expenses(name):
+def delete_expenses():
     with sqlite3.connect('expenses_tracker.db') as connection:
         connection.execute("PRAGMA foreign_keys = ON")
 
