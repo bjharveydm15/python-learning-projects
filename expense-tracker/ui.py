@@ -2,10 +2,10 @@ from textwrap import dedent
 
 def system_message(key):
     messages = {
-        'EMPTY': 'No existing category to rename.',
-        'NOT_FOUND': 'Chosen category does not exist.',
-        'SUCCESS': 'Category successfully modified.',
-        'DUPLICATE': 'Category already exists.',
+        'EMPTY': 'Field empty.',
+        'NOT_FOUND': 'Chosen input does not exist.',
+        'SUCCESS': 'Successfully updated.',
+        'DUPLICATE': 'Input already exists.',
         'NOT_VALID': 'Input not valid.'
     }
 
@@ -21,7 +21,7 @@ def main_menu():
         3. VIEW EXPENSES HISTORY
         4. EXIT
     ''')
-    run_menu(menu, 4)
+    return run_menu(menu, 4)
 
 def category_menu():
     print(f'{'-' * 40}')
@@ -33,7 +33,7 @@ def category_menu():
         4. Back to main menu
     ''')
 
-    run_menu(menu, 4)
+    return run_menu(menu, 4)
 
 def expenses_menu():
 
@@ -43,17 +43,16 @@ def expenses_menu():
         3. Back to main menu
     ''')
 
-    run_menu(menu, 3)
+    return run_menu(menu, 3)
 
 def view_menu():
 
     menu = dedent('''
         1. View expenses by category
-        2. View all expenses
-        3. Back to main menu
+        2. Back to main menu
     ''')
 
-    run_menu(menu, 3)
+    return run_menu(menu, 3)
 
 def run_menu(menu, options):
     while True:
@@ -80,7 +79,7 @@ def is_existing():
 
     return input('Please enter an existing category name: ').strip()
 
-def enter_amount(self):
+def enter_amount():
     print(f'{'-' * 40}')
 
     while True:
@@ -89,8 +88,30 @@ def enter_amount(self):
 
             if expense <= 0:
                 print('Amount must be greater than 0.')
+                continue
 
             return expense
 
         except ValueError:
             print('Please enter a valid number.')
+
+def delete_last_expense():
+    print(f'{'-' * 40}')
+
+    while True:
+        y_or_n = input(
+            'Do you want to delete the latest recorded expense? (y/n): '
+        ).strip().lower()
+
+        if y_or_n == 'y':
+            return True
+        elif y_or_n == 'n':
+            return False
+        else:
+            print('Please enter y or n only.')
+
+def view_expenses(records):
+    print(f'{'-' * 40}')
+
+    for record in records:
+        print(record[0])
