@@ -1,19 +1,90 @@
+"""
+Cows and Bulls Game
+
+A command-line implementation of the classic Cows and Bulls guessing game.
+
+This module provides:
+    - Secret number generation
+    - Difficulty selection
+    - Hint management
+    - Input validation
+    - Gameplay logic
+
+Workflow:
+    1. Prompt the player to select the secret number length
+       and a difficulty level.
+    2. Generate a random secret number.
+    3. Set the allowed attempts and available hints.
+    4. Award a hint after a specified number of attempts,
+       depending on the selected difficulty.
+    5. Offer the player the option to use an available hint.
+    6. Reveal the hint if the player chooses to use it.
+    7. Prompt the player to enter a guess.
+    8. Compare the guess with the secret number.
+    9. Display the number of cows and bulls.
+   10. End the game when the player guesses the secret number or
+       the player runs out of attempts, then reveal the secret number.
+"""
+
 import random
 
-def generate_numbers(state):
-    s = state
+
+def generate_numbers(state: dict) -> list[int]:
+    """
+    Generates a random secret number.
+
+    Parameters
+    ----------
+    state : dict
+        The current game state.
+
+        Expected keys are:
+
+            secret_length : int
+                The number of digits in the secret number.
+
+    Returns
+    -------
+    list[int]
+        The generated secret number.
+    """
+
+    length = state['secret_length']
     secret_number = []
 
-    for i in range(s['secret_length']):
+    for i in range(length):
         secret = random.randint(0,9)
         secret_number.append(secret)
 
-    print(f'\nI have generated a {s['secret_length']}-digit number with unique digits.'
+    print(f'\nI have generated a {length}-digit number with unique digits.'
         ' Try to guess it!')
 
     return secret_number
 
-def guess_secret(state):
+
+def guess_secret(state: dict) -> str:
+    """
+    Prompt the player to enter a guess.
+
+    The player's input is validated to ensure it is numeric and contains
+    the expected number of digits before being accepted.
+
+    Parameters
+    ----------
+    state : dict
+        The current game state.
+
+        Expected keys are:
+
+            secret_length : int
+                The number of digits in the secret number.
+
+    Returns
+    -------
+    str
+        The validated guess entered by the player.
+    """
+
     s = state
 
     while True:
@@ -26,12 +97,42 @@ def guess_secret(state):
         guess_count = len(list(user_guess))
 
         if guess_count != s['secret_length']:
-            print(f'Please enter a {s['secret_length']}-digit number.')
+            print(f"Please enter a {s['secret_length']}-digit number.")
             continue
 
         return user_guess
 
-def check_guess(state):
+
+def check_guess(state: dict) -> bool:
+    """
+    Compare the player's guess to the secret number.
+
+    If a digit in the player's guess matches a digit in the
+    secret number in the exact position, it is marked as a bull.
+    If it matches the number but the position is wrong, it is
+    marked as a cow.
+
+    Parameters
+    ----------
+    state : dict
+        The current game state.
+
+        Expected keys are:
+
+            user_guess : str
+                The player's guess.
+            secret_number : list[int]
+                The secret number to be guessed by the player.
+            secret_length : int
+                The number of digits in the secret number.
+
+    Returns
+    -------
+    bool
+        True if the number of bulls matches the secret_length;
+        otherwise, False.
+    """
+
     s = state
 
     bulls = 0
@@ -60,7 +161,20 @@ def check_guess(state):
 
     return False
 
-def ask_difficulty():
+
+def ask_secret_length() -> int:
+    """
+    Prompt the player for the secret number length.
+
+    Repeatedly prompts until the player enters a valid integer greater
+    than 3.
+
+    Returns
+    -------
+    int
+        The validated secret number length.
+    """
+
     while True:
         try:
             secret_length = int(input('Choose how many numbers do you want to guess? '))
@@ -72,7 +186,22 @@ def ask_difficulty():
             print('Please enter a number greater than 3.')
             continue
 
-        break
+        return secret_length
+
+
+def ask_difficulty() -> str:
+    """
+    Prompt the player to choose a difficulty level.
+
+    The selected difficulty determines the maximum number of allowed
+    attempts and the number of hints available during the game.
+
+    Returns
+    -------
+    str
+        The selected difficulty level: "forgiving", "balanced", or
+        "flawless".
+    """
 
     while True:
         difficulty = input(
@@ -83,9 +212,35 @@ def ask_difficulty():
             print('Please choose only between forgiving, balanced, and flawless')
             continue
 
-        return secret_length, difficulty
+        return difficulty
 
-def set_allowed_attempts(state):
+
+def set_allowed_attempts(state: dict) -> int:
+    """
+    Calculates the maximum allowed attempts for the game.
+
+    The calculation is based on the selected difficulty level and
+    secret number length.
+
+    Parameters
+    ----------
+    state : dict
+        The current game state.
+
+        Expected keys are:
+
+            difficulty : str
+                The current game difficulty. Valid values are "forgiving",
+                "balanced", and "flawless".
+            secret_length : int
+                The number of digits in the secret number.
+
+    Returns
+    -------
+    int
+        The maximum number of attempts allowed for the entire game.
+    """
+    
     s = state
 
     if s['difficulty'] == 'forgiving':
@@ -97,7 +252,35 @@ def set_allowed_attempts(state):
 
     return allowed_attempts
 
-def should_add_hint(state):
+
+def should_add_hint(state: dict) -> int:
+    """
+    Determine whether an additional hint should be awarded.
+
+    A hint should be awarded based on the selected difficulty
+    level after a specified number of attempts.
+
+    Parameters
+    ----------
+    state : dict
+        The current game state.
+
+        Expected keys are:
+
+            difficulty : str
+                The current game difficulty. Valid values are "forgiving",
+                "balanced", and "flawless".
+            allowed_attempts : int
+                The maximum number of attempts allowed in the game.
+            attempts : int
+                The current attempt count in the game.
+
+    Returns
+    -------
+    int
+        1 if a hint should be awarded; otherwise, 0.
+    """
+
     s = state
 
     add_hint = 0
@@ -114,7 +297,25 @@ def should_add_hint(state):
 
     return add_hint
 
-def offer_hint(is_consecutive):
+
+def offer_hint(is_consecutive: bool) -> bool:
+    """
+    Offer a hint to the player.
+
+    A hint is offered only when there is at least one hint available.
+
+    Parameters
+    ----------
+    is_consecutive : bool
+        Determines if a hint has already been offered during the
+        current attempt.
+
+    Returns
+    -------
+    bool
+        True if the player chooses to reveal a hint; otherwise, False.
+    """
+
     while True:
         if not is_consecutive:
             is_yes = input('\nDo you want a hint (y/n): ').lower()
@@ -130,7 +331,41 @@ def offer_hint(is_consecutive):
         else:
             return False
 
-def reveal_hint(state):
+
+def reveal_hint(state: dict) -> int:
+    """
+    Reveal the hint to the player.
+
+    The hint revealed depends on the current game difficulty. For the
+    forgiving difficulty, multiple hints are revealed sequentially.
+
+    Parameters
+    ----------
+    state : dict
+        The current game state.
+
+        Expected keys are:
+
+            difficulty : str
+                The current game difficulty. Valid values are "forgiving",
+                "balanced", and "flawless".
+            secret_number : list[int]
+                The digits of the randomly generated secret number.
+            hint_1_used : bool
+                Whether the first hint has already been revealed.
+
+    Returns
+    -------
+    int
+        The number of hints to deduct from the player's remaining hints.
+        Returns 1 when a hint is revealed; otherwise, 0.
+
+    Notes
+    -----
+    For the forgiving difficulty, the game state is updated after the
+    first hint is revealed so that subsequent calls reveal the second hint.
+    """
+
     s = state
 
     deduct_hint = 0
@@ -153,14 +388,44 @@ def reveal_hint(state):
 
     return deduct_hint
 
-def reveal_secret(state):
+
+def reveal_secret(state: dict) -> str:
+    """
+    Convert the secret number to a string.
+
+    Parameters
+    ----------
+    state : dict
+        The current game state.
+
+        Expected keys are:
+
+            secret_number : list[int]
+                The digits of the randomly generated secret number.
+
+    Returns
+    -------
+    str
+        The secret number represented as a string.
+    """
+
     s = state
 
     secret_number = s['secret_number']
 
     return ''.join(str(x) for x in secret_number)
 
+
 def main():
+    """
+    Run the game.
+
+    Initializes the game state dictionary, configures the game based on
+    player input, executes the main gameplay loop, manages hints and
+    attempts, and displays either the winning message or the secret
+    number when the game ends.
+    """
+
     state = {
         'attempts': 1,
         'hints': 0,
@@ -175,8 +440,8 @@ def main():
 
     s = state
 
-    s['secret_length'], s['difficulty'] = ask_difficulty()
-
+    s['difficulty'] = ask_difficulty()
+    s['secret_length'] = ask_secret_length()
     s['allowed_attempts'] = set_allowed_attempts(state)
 
     s['secret_number'] = generate_numbers(state)
