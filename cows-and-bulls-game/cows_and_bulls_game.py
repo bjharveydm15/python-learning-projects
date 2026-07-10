@@ -13,8 +13,8 @@ This module provides:
 Workflow:
     1. Prompt the player to select the secret number length
        and a difficulty level.
-    2. Generate a random secret number.
-    3. Set the allowed attempts and available hints.
+    2. Set the allowed attempts and available hints.
+    3. Generate a random secret number.
     4. Award a hint after a specified number of attempts,
        depending on the selected difficulty.
     5. Offer the player the option to use an available hint.
@@ -28,139 +28,10 @@ Workflow:
 
 import random
 
-
-def generate_numbers(state: dict) -> list[int]:
-    """
-    Generates a random secret number.
-
-    Parameters
-    ----------
-    state : dict
-        The current game state.
-
-        Expected keys are:
-
-            secret_length : int
-                The number of digits in the secret number.
-
-    Returns
-    -------
-    list[int]
-        The generated secret number.
-    """
-
-    length = state['secret_length']
-    secret_number = []
-
-    for i in range(length):
-        secret = random.randint(0,9)
-        secret_number.append(secret)
-
-    print(f'\nI have generated a {length}-digit number with unique digits.'
-        ' Try to guess it!')
-
-    return secret_number
-
-
-def guess_secret(state: dict) -> str:
-    """
-    Prompt the player to enter a guess.
-
-    The player's input is validated to ensure it is numeric and contains
-    the expected number of digits before being accepted.
-
-    Parameters
-    ----------
-    state : dict
-        The current game state.
-
-        Expected keys are:
-
-            secret_length : int
-                The number of digits in the secret number.
-
-    Returns
-    -------
-    str
-        The validated guess entered by the player.
-    """
-
-    s = state
-
-    while True:
-        user_guess = input('Guess: ')
-
-        if not user_guess.isdigit():
-            print("Please enter a number.")
-            continue
-
-        guess_count = len(list(user_guess))
-
-        if guess_count != s['secret_length']:
-            print(f"Please enter a {s['secret_length']}-digit number.")
-            continue
-
-        return user_guess
-
-
-def check_guess(state: dict) -> bool:
-    """
-    Compare the player's guess to the secret number.
-
-    If a digit in the player's guess matches a digit in the
-    secret number in the exact position, it is marked as a bull.
-    If it matches the number but the position is wrong, it is
-    marked as a cow.
-
-    Parameters
-    ----------
-    state : dict
-        The current game state.
-
-        Expected keys are:
-
-            user_guess : str
-                The player's guess.
-            secret_number : list[int]
-                The secret number to be guessed by the player.
-            secret_length : int
-                The number of digits in the secret number.
-
-    Returns
-    -------
-    bool
-        True if the number of bulls matches the secret_length;
-        otherwise, False.
-    """
-
-    s = state
-
-    bulls = 0
-    cows = 0
-
-    guess_number = [int(x) for x in s['user_guess']]
-
-    dummy_secret = s['secret_number'].copy()
-    dummy_guess = guess_number.copy()
-
-    for guess, secret in zip(guess_number, s['secret_number']):
-        if guess == secret:
-            bulls += 1
-            dummy_secret.remove(secret)
-            dummy_guess.remove(guess)
-
-    for guess in dummy_guess:
-        if guess in dummy_secret:
-            cows += 1
-            dummy_secret.remove(guess)
-
-    if bulls == s['secret_length']:
-        return True
-
-    print(f'Bulls: {bulls} Cows: {cows}')
-
-    return False
-
+# --------------------------------------------------------------------
+# Initialization Functions:
+# These functions adjusts game setup according to the player's choice.
+# --------------------------------------------------------------------
 
 def ask_secret_length() -> int:
     """
@@ -240,7 +111,7 @@ def set_allowed_attempts(state: dict) -> int:
     int
         The maximum number of attempts allowed for the entire game.
     """
-    
+
     s = state
 
     if s['difficulty'] == 'forgiving':
@@ -252,6 +123,43 @@ def set_allowed_attempts(state: dict) -> int:
 
     return allowed_attempts
 
+
+def generate_numbers(state: dict) -> list[int]:
+    """
+    Generates a random secret number.
+
+    Parameters
+    ----------
+    state : dict
+        The current game state.
+
+        Expected keys are:
+
+            secret_length : int
+                The number of digits in the secret number.
+
+    Returns
+    -------
+    list[int]
+        The generated secret number.
+    """
+
+    length = state['secret_length']
+    secret_number = []
+
+    for i in range(length):
+        secret = random.randint(0,9)
+        secret_number.append(secret)
+
+    print(f'\nI have generated a {length}-digit number with unique digits.'
+        ' Try to guess it!')
+
+    return secret_number
+
+
+# ------------------------------------------------------------------
+# Hint Functions:
+# ------------------------------------------------------------------
 
 def should_add_hint(state: dict) -> int:
     """
@@ -387,6 +295,111 @@ def reveal_hint(state: dict) -> int:
             deduct_hint = 1
 
     return deduct_hint
+
+
+# ------------------------------------------------------------------
+# Logical Functions:
+# The modules required functions to carry out game logic.
+# ------------------------------------------------------------------
+
+def guess_secret(state: dict) -> str:
+    """
+    Prompt the player to enter a guess.
+
+    The player's input is validated to ensure it is numeric and contains
+    the expected number of digits before being accepted.
+
+    Parameters
+    ----------
+    state : dict
+        The current game state.
+
+        Expected keys are:
+
+            secret_length : int
+                The number of digits in the secret number.
+
+    Returns
+    -------
+    str
+        The validated guess entered by the player.
+    """
+
+    s = state
+
+    while True:
+        user_guess = input('Guess: ')
+
+        if not user_guess.isdigit():
+            print("Please enter a number.")
+            continue
+
+        guess_count = len(list(user_guess))
+
+        if guess_count != s['secret_length']:
+            print(f"Please enter a {s['secret_length']}-digit number.")
+            continue
+
+        return user_guess
+
+
+def check_guess(state: dict) -> bool:
+    """
+    Compare the player's guess to the secret number.
+
+    If a digit in the player's guess matches a digit in the
+    secret number in the exact position, it is marked as a bull.
+    If it matches the number but the position is wrong, it is
+    marked as a cow.
+
+    Parameters
+    ----------
+    state : dict
+        The current game state.
+
+        Expected keys are:
+
+            user_guess : str
+                The player's guess.
+            secret_number : list[int]
+                The secret number to be guessed by the player.
+            secret_length : int
+                The number of digits in the secret number.
+
+    Returns
+    -------
+    bool
+        True if the number of bulls matches the secret_length;
+        otherwise, False.
+    """
+
+    s = state
+
+    bulls = 0
+    cows = 0
+
+    guess_number = [int(x) for x in s['user_guess']]
+
+    dummy_secret = s['secret_number'].copy()
+    dummy_guess = guess_number.copy()
+
+    for guess, secret in zip(guess_number, s['secret_number']):
+        if guess == secret:
+            bulls += 1
+            dummy_secret.remove(secret)
+            dummy_guess.remove(guess)
+
+    for guess in dummy_guess:
+        if guess in dummy_secret:
+            cows += 1
+            dummy_secret.remove(guess)
+
+    if bulls == s['secret_length']:
+        return True
+
+    print(f'Bulls: {bulls} Cows: {cows}')
+
+    return False
 
 
 def reveal_secret(state: dict) -> str:
